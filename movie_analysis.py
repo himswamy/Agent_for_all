@@ -12,19 +12,15 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 import pandas as pd
 from io import StringIO
 from langchain_openai import ChatOpenAI
-
-
-
 memory = SqliteSaver.from_conn_string(":memory:")
 from langgraph.graph import StateGraph
-#with SqliteSaver.from_conn_string("sqlite:///chat_memory.db"):
- #   graph = graph_builder.compile(checkpointer=memory)
 from langgraph.checkpoint.memory import MemorySaver
+from typing import TypedDict, List
+from pydantic import BaseModel
+from tavily import TavilyClient
 
 memory = MemorySaver()
 
-
-# Load environment variables from .env file
 load_dotenv()
 
 #client = OpenAI()
@@ -40,15 +36,7 @@ tavily = os.getenv("TAVILY_API_KEY")
 llm_name = "gpt-3.5-turbo"
 model = ChatOpenAI(api_key=openai_key, model=llm_name)
 
-from tavily import TavilyClient
-
-tavily = TavilyClient(api_key=tavily)
-
-
-from typing import TypedDict, List
-#from langchain_core.pydantic_v1 import BaseModel
-from pydantic import BaseModel
-
+tavily = TavilyClient(api_key=xxxx)
 
 class AgentState(TypedDict):
     task: str
@@ -72,7 +60,7 @@ class Queries(BaseModel):
 # Define the prompts for each node - IMPROVE AS NEEDED
 GATHER_MOVIE_PROMPT = """You are an expert movie analyst. Gather the movie data for the given years. Provide detailed  data."""
 ANALYZE_DATA_PROMPT = """You are an expert movie analyst. Analyze the provided movie data and provide detailed insights and analysis."""
-RESEARCH_SIMILAR_PROMPT = """You are a researcher tasked with providing information about similar companies for performance comparison. Generate a list of search queries to gather relevant information. Only generate 3 queries max."""
+RESEARCH_SIMILAR_PROMPT = """You are a researcher tasked with providing information about similar movies for performance comparison. Generate a list of search queries to gather relevant information. Only generate 3 queries max."""
 COMPETE_PERFORMANCE_PROMPT = """You are an expert movie analyst. Compare the movie performance of the given movie with its similar based on the provided data.
 **MAKE SURE TO INCLUDE THE NAMES OF THE SIMILAR IN THE COMPARISON.**"""
 FEEDBACK_PROMPT = """You are a reviewer. Provide detailed feedback and critique for the provided movie comparison report. Include any additional information or revisions needed."""
@@ -125,7 +113,6 @@ def research_similar_node(state: AgentState):
             for r in response["results"]:
                 content.append(r["content"])
     return {"content": content}
-
 
 def compare_performance_node(state: AgentState):
     content = "\n\n".join(state["content"] or [])
